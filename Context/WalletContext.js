@@ -44,9 +44,62 @@ export const WalletSignatureContext = React.createContext();
 export const WalletSignatureProvider = ({children})=> {
 
     const title = "Multi Signature Wallet";
-    
+
+    //STATE VARIABLE
+    const [ownersAddress, setOwnersAddress] = useState([]);
+    const [ownerCount, setOwnerCount] = useState("");
+    const [allTransaction, setAllTransaction] = useState([]);
+
+    //GET OWNER
+    const getAllOwners = async()=>{
+        try {
+            const contract = await connectWithContract();
+            const ownerAddress = await contract.getOwners();
+            console.log(ownerAddress);
+            setOwnersAddress(ownerAddress);
+
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    useEffect(() => {
+        getAllOwners();
+    },[]);
+
+    //GET TRANSACTION DATA
+    const transactionData = async () => {
+        try {
+            const contract = await connectWithContract();
+            const transaction = contract.getTransaction();
+            const formateTransaction = transaction.map((trans) => ({
+                addressFrom: trans.to,
+                transAmount: trans.value,
+                data: trans.data,
+                executed: trans.executed,
+                numConfirmations: trans.numConfirmations,
+            }));
+            setAllTransaction(formateTransaction);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    //SUBMIT TRANSACTION
+    const submit = async () => {
+        try {
+            const 
+            const contract = await connectWithContract();
+            const submitData = await contract.submitTransaction();
+            
+            submitData.wait();
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     return(
-        <WalletSignatureContext.Provider value={{title}}>
+        <WalletSignatureContext.Provider value={{getAllOwners, transactionData, title}}>
             {children}
         </WalletSignatureContext.Provider>
     );
