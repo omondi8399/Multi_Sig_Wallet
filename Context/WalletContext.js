@@ -21,6 +21,7 @@ const client = ipfsHttpClient({
 
 //INTERNAL IMPORT
 import { walletAddress, walletABI } from './constants';
+import { checkIfWalletConnect, connectWallet, uploadIPFS} from '../Utils/importantFunction.js'
 
 //FETCH CONTRACT FUNCTION
 const fetchContract = (signerOrProvider) => new ethers.Contract(walletAddress, walletABI, signerOrProvider);
@@ -49,6 +50,7 @@ export const WalletSignatureProvider = ({children})=> {
     const [ownersAddress, setOwnersAddress] = useState([]);
     const [ownerCount, setOwnerCount] = useState("");
     const [allTransaction, setAllTransaction] = useState([]);
+    const [currentAccount, setCurrentAccount] = useState("")
 
     //GET OWNER
     const getAllOwners = async()=>{
@@ -57,6 +59,9 @@ export const WalletSignatureProvider = ({children})=> {
             const ownerAddress = await contract.getOwners();
             console.log(ownerAddress);
             setOwnersAddress(ownerAddress);
+            // GET CURRENT ACCOUNT 
+            const acc = await checkIfWalletConnect()
+            console.log(acc);
 
         } catch (error) {
             console.log(error);
@@ -86,17 +91,25 @@ export const WalletSignatureProvider = ({children})=> {
     }
 
     //SUBMIT TRANSACTION
-    const submit = async () => {
+    const submit = async ( address, amount, data) => {
         try {
-            const 
+            const address = "0xjieijwf31k0k20232krif31kdkeidj10kf5788";
+            const amount = ethers.utils.parseEther(5) ;
+            const data = "0x";
+
             const contract = await connectWithContract();
-            const submitData = await contract.submitTransaction();
+            const submitData = await contract.submitTransaction(currentAccount, amount, data,{gasLimit: "0x5208",});
             
             submitData.wait();
+            console.log(submitData)
         } catch (error) {
             console.log(error);
         }
     }
+
+    useEffect(()=> {
+        submit();
+    }, [])
 
     return(
         <WalletSignatureContext.Provider value={{getAllOwners, transactionData, title}}>
